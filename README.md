@@ -9,10 +9,9 @@
 
 2. Challeng Tasks
 
-*     First Stage
-    Basing on https://langchain-ai.github.io/langgraph/tutorials/rag/langgraph_adaptive_rag/
+* First Stage - Basing on https://langchain-ai.github.io/langgraph/tutorials/rag/langgraph_adaptive_rag/
 
-        - Starting the service
+    - Starting the service
         ```
         cd first_stage
         python3 app.py
@@ -22,8 +21,7 @@
    - Demo for the first stage
 <img width="1479" height="686" alt="屏幕截图 2025-08-11 170842" src="https://github.com/user-attachments/assets/7be5e6ba-e415-4180-a095-4bdeaa1ed0fb" />
 
-*     Second Stage
-    Basing on https://langchain-ai.github.io/langgraph/tutorials/multi_agent/hierarchical_agent_teams/
+* Second Stage - Basing on https://langchain-ai.github.io/langgraph/tutorials/multi_agent/hierarchical_agent_teams/
 
     - Starting the service
         ```
