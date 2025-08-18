@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能问答系统</title>
+    <style>
+        :root {
+            --primary-color: #4a6cf7;
+            --secondary-color: #6b7280;
+            --accent-color: #3b82f6;
+            --background-color: #f9fafb;
+            --card-color: #ffffff;
+            --border-color: #e5e7eb;
+            --text-color: #111827;
+            --success-color: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background-color: var(--card-color);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            margin-bottom: 30px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .question-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .question-input {
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            align-self: flex-start;
+        }
+
+        .submit-button:hover {
+            background-color: var(--accent-color);
+        }
+
+        .response-section {
+            margin-top: 30px;
+        }
+
+        .response-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .response-icon {
+            color: var(--success-color);
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .response-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .response-content {
+            background-color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(74, 108, 247, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .submit-button {
+                align-self: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>智能问答系统</h1>
+        <p class="subtitle">基于 LangGraph 的高级问答助手</p>
+    </header>
+
+    <main>
+        <div class="card">
+            <form class="question-form" action="/ask" method="post">
+                <textarea
+                    class="question-input"
+                    name="question"
+                    placeholder="请输入您的问题...例如: What player at the Bears expected to draft first in the 2024 NFL draft?"
+                    required
+                >{{ question }}</textarea>
+                <button type="submit" class="submit-button">提交问题</button>
+            </form>
+        </div> 
+
+        {% if response %}
+        <div class="card response-section">
+            <div class="response-header">
+                <span class="response-icon">✓</span>
+                <h2 class="response-title">回答</h2>
+            </div>
+            <div class="response-content">{{ response }}</div>
+        </div>
+        {% endif %}
+    </main>
+
+    <script>
+        // 添加表单提交动画
+        document.querySelector('form').addEventListener('submit', function() {
+            const submitButton = this.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="loading"></span>处理中...';
+        });
+    </script>
+</body>
+</html>
