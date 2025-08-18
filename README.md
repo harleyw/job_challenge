@@ -10,7 +10,7 @@
 2. Challeng Tasks
 
     **First Stage**
-    
+    Basing on https://langchain-ai.github.io/langgraph/tutorials/rag/langgraph_adaptive_rag/
     Starting server
     ```
     cd first_stage
@@ -19,7 +19,7 @@
     Input url: http://localhost:8000 in the chrome/edge
 
     **Second Stage**
-    
+    Basing on https://langchain-ai.github.io/langgraph/tutorials/multi_agent/hierarchical_agent_teams/
     Starting server
     ```
     cd second_stage
