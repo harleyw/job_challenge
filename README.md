@@ -30,6 +30,7 @@
         python3 server.py
 
         # Frontend service
+        cd qa-system-frontend
         python3 -m http.server 8080
         ```
         
