@@ -3,6 +3,7 @@ from flask import Flask, request, Response, stream_with_context
 from flask_cors import CORS
 import json
 import time
+import re
 import setup
 
 # 尝试导入LangGraph相关模块
@@ -30,22 +31,66 @@ def generate_response():
         for step in super_graph.stream(state):
             # 检查研究团队的消息
             if 'research_team' in step and 'messages' in step['research_team']:
-                #print('检测到研究团队消息:', step['research_team']['messages'])
+                print('检测到研究团队消息:', step['research_team']['messages'])
                 for message in step['research_team']['messages']:
                     if hasattr(message, 'content'):
-                        # 流式输出内容 (符合SSE标准)
-                        yield f"data: [{message.name}] {message.content}\n\n"
-                        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 研究团队消息内容:", message.content)
-                        time.sleep(1)  # 模拟实时响应
+                        # 处理研究团队消息
+                        # 按空格分割但保留换行符
+                        # 按空格和换行符分割，同时保留换行符作为单词
+                        research_words = []
+                        for token in re.split(r'(\n)', message.content):
+                            if token == '\n':
+                                research_words.append(token)
+                            else:
+                                # 按空格分割并过滤空字符串
+                                research_words.extend([word for word in token.split(' ') if word])
+                        for i, word in enumerate(research_words):
+                            # 流式输出单个单词
+                            if i == 0:
+                                # 第一个单词，添加前缀
+                                yield f"data: [{message.name}] {word}\n\n"
+                            elif i == len(research_words) - 1:
+                                # 最后一个单词，添加后缀
+                                yield f"data: {word}<br>\n\n"
+                            elif word == '\n':
+                                # 文中换行符
+                                yield f"data: <br>\n\n"
+                            else:
+                                # 中间单词，直接输出
+                                yield f"data: {word}\n\n"
+                            # print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 研究团队单词: {word}")
+                            time.sleep(0.1)  # 单词间短暂延迟
             # 检查写作团队的消息
             if 'writing_team' in step and 'messages' in step['writing_team']:
-                #print('检测到写作团队消息:', step['writing_team']['messages'])
+                print('检测到写作团队消息:', step['writing_team']['messages'])
                 for message in step['writing_team']['messages']:
                     if hasattr(message, 'content'):
-                        # 流式输出内容 (符合SSE标准)
-                        yield f"data: [{message.name}] {message.content}\n\n"
-                        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 写作团队消息内容:", message.content)
-                        time.sleep(1)  # 模拟实时响应
+                        # 处理写作团队消息
+                        # 按空格分割但保留换行符
+                        # 按空格和换行符分割，同时保留换行符作为单词
+                        writing_words = []
+                        for token in re.split(r'(\n)', message.content):
+                            if token == '\n':
+                                writing_words.append(token)
+                            else:
+                                # 按空格分割并过滤空字符串
+                                writing_words.extend([word for word in token.split(' ') if word])
+                        for i, word in enumerate(writing_words):
+                            # 流式输出单个单词
+                            if i == 0:
+                                # 第一个单词，添加前缀
+                                yield f"data: [{message.name}] {word}\n\n"
+                            elif i == len(writing_words) - 1:
+                                # 最后一个单词，添加后缀
+                                yield f"data: {word}<br>\n\n"
+                            elif word == '\n':
+                                # 文中换行符
+                                yield f"data: <br>\n\n"
+                            else:
+                                # 中间单词，直接输出
+                                yield f"data: {word}\n\n"
+                            # print(f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] 写作团队单词: {word}")
+                            time.sleep(0.1)  # 单词间短暂延迟
     except Exception as e:
         yield f"data: Error processing request: {str(e)}\n\n"
     print("=============================done=============================")

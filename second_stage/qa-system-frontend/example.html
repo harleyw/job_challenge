@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实时数据监控</title>
+    <!-- 引入Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>实时数据监控</h1>
+        <div id="status">连接状态: {{ connectionStatus }}</div>
+        <ul id="data-list">
+            <li v-for="item in realtimeData" :key="item.timestamp">
+                {{ item.timestamp }} - 值: {{ item.value }}
+            </li>
+        </ul>
+    </div>
+
+    <script>
+        // 使用全局引入的Vue
+        const { createApp, ref, onMounted, onUnmounted } = Vue
+        
+        const app = createApp({
+            setup() {
+                const realtimeData = ref([])
+                const connectionStatus = ref('未连接')
+                let controller = null
+
+                // 创建 POST 连接
+                const createPostConnection = () => {
+                    connectionStatus.value = '连接中...'
+                    controller = new AbortController()
+                    const signal = controller.signal
+
+                    fetch('http://localhost:7000/api/stream', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({}), // 空请求体
+                        signal
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`)
+                        }
+                        connectionStatus.value = '已连接'
+                        console.log('POST 连接已建立')
+
+                        const reader = response.body.getReader()
+                        const decoder = new TextDecoder()
+                        let buffer = ''
+
+                        // 处理流式响应
+                        const processStream = ({ done, value }) => {
+                            if (done) {
+                                console.log('流已结束')
+                                connectionStatus.value = '连接断开'
+                                // 1秒后尝试重连
+                                setTimeout(createPostConnection, 1000)
+                                return
+                            }
+
+                            buffer += decoder.decode(value, { stream: true })
+                            const lines = buffer.split('\n\n')
+                            buffer = lines.pop() || ''
+
+                            lines.forEach(line => {
+                                if (line.startsWith('data: ')) {
+                                    try {
+                                        const dataStr = line.slice(6) // 移除 'data: '
+                                        const data = JSON.parse(dataStr)
+                                        realtimeData.value.push(data)
+                                        // 保持只显示最近20条数据
+                                        if (realtimeData.value.length > 20) {
+                                            realtimeData.value.shift()
+                                        }
+                                    } catch (error) {
+                                        console.error('数据解析错误:', error)
+                                    }
+                                }
+                            })
+
+                            return reader.read().then(processStream)
+                        }
+
+                        return reader.read().then(processStream)
+                    })
+                    .catch(error => {
+                        if (error.name !== 'AbortError') {
+                            console.error('POST 连接错误:', error)
+                            connectionStatus.value = '连接断开'
+                            // 1秒后尝试重连
+                            setTimeout(createPostConnection, 1000)
+                        }
+                    })
+                }
+
+                onMounted(() => {
+                    createPostConnection()
+                })
+
+                onUnmounted(() => {
+                    if (controller) {
+                        controller.abort()
+                    }
+                })
+
+                return {
+                    realtimeData,
+                    connectionStatus
+                }
+            }
+        })
+
+        app.mount('#app')
+    </script>
+</body>
+</html>
